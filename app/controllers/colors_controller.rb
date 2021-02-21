@@ -1,7 +1,6 @@
 class ColorsController < ApplicationController
-  before_action :authorize_admin_request, only: [:create, :update, :destroy]
-  before_action :authorize_request, only: [:show]
-
+	
+  before_action :authorize_request, only: [:show, :create, :update, :destroy]
 
   def index
     @colors = Color.all 
@@ -14,33 +13,39 @@ class ColorsController < ApplicationController
   end 
 
   def create
-    @color = Color.create!(color_params)
+    @color = Color.create(
+        name: params[:name],
+        color: params[:color],
+        pantone: params[:pantone],
+        year: params[:year]
+    )
     render json: @color
   end 
 
   def update
     @color = Color.find(params[:id])
-    @color.update(color_params)
+    @color.update(
+        name: params[:name],
+        color: params[:color],
+        pantone: params[:pantone],
+        year: params[:year]
+    )
     render json: @color
   end 
 
   def destroy
     @colors = Color.all 
     @color = Color.find(params[:id])
+    byebug
     @color.destroy
     render json: @colors
   end 
 
   private
 
-  def chirp_params
-    params.permit(:name, :color, :pantone, :year)
-  end
-
-  def authorize_request
-      byebug
-    AuthorizationService.new(request.headers).authenticate_request!
-  rescue JWT::VerificationError, JWT::DecodeError
-    render json: { errors: ['Not Authenticated'] }, status: :unauthorized
-  end
+    def authorize_request
+      AuthorizationService.new(request.headers, action_name).authenticate_request!
+    rescue AuthorizationService::TokenError, AuthorizationService::AuthorizationError => e
+      render json: { errors: e.message }, status: :unauthorized
+    end
 end
