@@ -44,7 +44,6 @@ class ColorsController < ApplicationController
   def destroy
     @colors = Color.all 
     @color = Color.find(params[:id])
-    byebug
     @color.destroy
     render json: @colors
   end 
