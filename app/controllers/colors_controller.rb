@@ -3,8 +3,10 @@ class ColorsController < ApplicationController
   before_action :authorize_request, only: [:show, :create, :update, :destroy]
 
   def index
-    @colors = Color.all 
-    render json: @colors
+    @colors = Color.all.page(request.headers[:page]).per(request.headers[:items])
+    render json: {data: @colors, page:
+      {total: @colors.total_pages, current: @colors.current_page, next: @colors.next_page, prev: @colors.prev_page, total: @colors.total_pages, total_data: @colors.total_count }
+    }
   end 
 
 	def show
